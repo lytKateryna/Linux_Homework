@@ -1,0 +1,28 @@
+#!/bin/bash
+ADDRESS="8.8.8.8"
+COUNT=0
+LIMIT=3
+PING_MC=100
+while true; do
+  rtt=$(ping -c 1 "$ADDRESS" 2>/dev/null | awk -F'time=' '/time=/{print $2; exit
+}' | cut -d' ' -f1)
+ 
+  if [ -n "$rtt" ]; then
+     rtt_int=${rtt%.*}
+     echo "Reply from $ADDRESS: ${rtt} ms"
+     COUNT=0
+ 
+  if [ "$rtt_int" -gt "$PING_MC" ]; then
+     echo "High latency: ${rtt} mc (threshold ${PING_MC} mc)"
+  fi
+ else
+     COUNT=$((COUNT+1))
+     echo "No answer ($COUNT)"
+     if [ "$COUNT" -ge "$LIMIT" ]; then
+     echo "$COUNT - series of unsuccessful attempts!"
+     fi
+  fi
+ 
+  sleep 1
+done
+ 
